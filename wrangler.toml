@@ -5,6 +5,9 @@ account_id = ""
 route = ""
 workers_dev = true
 compatibility_date = "2022-02-19"
+kv_namespaces = [ 
+         { binding = "Categories", preview_id = "c41a796053884f6bb506e1467b471d30", id = "a79ecfab45294a3e9438d9492ed7046c" }
+]
 
 [build]
 command = "npm install && npm run build"
