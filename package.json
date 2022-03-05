@@ -23,6 +23,7 @@
     "@types/jest": "^26.0.23",
     "@types/qs": "^6.9.7",
     "@types/service-worker-mock": "^2.0.1",
+    "@types/slug": "^5.0.3",
     "@typescript-eslint/eslint-plugin": "^4.16.1",
     "@typescript-eslint/parser": "^4.16.1",
     "eslint": "^7.21.0",
@@ -38,6 +39,7 @@
     "webpack-cli": "^4.7.0"
   },
   "dependencies": {
-    "qs": "^6.10.3"
+    "qs": "^6.10.3",
+    "slug": "^5.2.0"
   }
 }

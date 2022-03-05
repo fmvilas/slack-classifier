@@ -1,4 +1,5 @@
 import qs from 'qs'
+import slug from 'slug'
 
 interface Category {
   text: string,
@@ -8,7 +9,12 @@ interface Category {
 const modal = async (metadata:any) => {
   // @ts-ignore
   const categories:Category[] = JSON.parse(await Categories.get('list') || '[]')
-
+  
+  categories.push({
+    key: 'custom',
+    text: 'Custom value',
+  })
+  
   return {
     "title": {
       "type": "plain_text",
@@ -38,6 +44,38 @@ const modal = async (metadata:any) => {
           })),
           "action_id": "static_select-action"
         }
+      },
+      {
+        "type": "divider"
+      },
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "New category",
+          "emoji": true
+        }
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "Can't find the category you need? Create a new one here."
+        }
+      },
+      {
+        "type": "input",
+        "optional": true,
+        "block_id": "customCategoryName",
+        "element": {
+          "type": "plain_text_input",
+          "action_id": "name"
+        },
+        "label": {
+          "type": "plain_text",
+          "text": "Name",
+          "emoji": true
+        }
       }
     ],
     "type": "modal",
@@ -46,6 +84,7 @@ const modal = async (metadata:any) => {
 }
 
 export async function handleRequest(request: Request): Promise<Response> {
+  // @ts-ignore
   const body:string = await request.text()
   const params:any = qs.parse(body)
   console.log(JSON.stringify(params, undefined, 2))
@@ -72,7 +111,8 @@ async function showView(payload:any) {
     method: "POST",
     headers: {
       'Content-Type': 'application/json;charset=UTF-8',
-      Authorization: 'Bearer xoxb-106512637844-3123249004355-GWH6InWhwELoJz0x3NOw1hp1'
+      // @ts-ignore
+      Authorization: `Bearer ${SLACK_TOKEN}`
     },
   }
   const response = await fetch('https://slack.com/api/views.open', init)
@@ -80,11 +120,27 @@ async function showView(payload:any) {
 }
 
 async function submitClassification(payload:any) {
-  const categoryId = payload.view.state.values.category['static_select-action'].selected_option.value
+  let categoryId:string
+  const selectCategoryId = payload.view.state.values.category['static_select-action'].selected_option?.value
+  const customCategoryName = payload.view.state.values.customCategoryName.name.value
   const message = JSON.parse(payload.view.private_metadata)
   const user = payload.user
+
   // @ts-ignore
   const categories = JSON.parse(await Categories.get('list') || '[]')
+
+  if (customCategoryName) {
+    categoryId = slug(customCategoryName)
+    categories.push({
+      text: customCategoryName,
+      key: categoryId,
+    })
+    // @ts-ignore
+    await Categories.put('list', JSON.stringify(categories))
+  } else {
+    categoryId = selectCategoryId
+  }
+  
   // @ts-ignore
   const store = JSON.parse(await Categories.get('store') || '{}')
   if (store[categoryId] && Array.isArray(store[categoryId])) {
